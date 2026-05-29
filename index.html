@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a2744">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Yapı Maliyet">
+<title>Yapı Maliyet Hesaplama</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0d1b3e;
+    --blue: #1a3a6b;
+    --accent: #e8a020;
+    --accent2: #3b82f6;
+    --surface: #162040;
+    --card: #1e2d55;
+    --border: rgba(255,255,255,0.08);
+    --text: #e8edf8;
+    --muted: #8899bb;
+    --green: #22c55e;
+    --red: #ef4444;
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: var(--navy); color: var(--text); font-family: 'DM Sans', sans-serif; }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #0d1b3e 0%, #1a3a6b 100%);
+    padding: 20px 20px 16px;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px; font-weight: 800;
+    letter-spacing: -0.5px; color: #fff;
+    display: flex; align-items: center; gap: 10px;
+    justify-content: space-between;
+  }
+  .header-brand {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 8px; font-weight: 400;
+    letter-spacing: 0.5px; color: var(--muted);
+    text-transform: none; flex-shrink: 0;
+    margin-right: 2px; align-self: flex-end; padding-bottom: 2px;
+  }
+  .header-title .icon {
+    width: 32px; height: 32px;
+    background: var(--accent); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .header-sub { font-size: 12px; color: var(--muted); margin-top: 4px; margin-left: 42px; }
+
+  /* MAIN */
+  .main { padding: 20px; max-width: 480px; margin: 0 auto; padding-bottom: 40px; }
+
+  /* CARD */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px; margin-bottom: 16px;
+  }
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--accent); margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-title::before { content: ''; width: 3px; height: 14px; background: var(--accent); border-radius: 2px; }
+
+  /* FORM */
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label {
+    display: block; font-size: 12px; font-weight: 500;
+    color: var(--muted); margin-bottom: 6px; letter-spacing: 0.3px;
+  }
+  .field input, .field select {
+    width: 100%;
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    color: var(--text); font-size: 16px;
+    font-family: 'DM Sans', sans-serif;
+    padding: 12px 14px; outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    appearance: none; -webkit-appearance: none;
+  }
+  .field input:focus, .field select:focus {
+    border-color: var(--accent2);
+    background: rgba(59,130,246,0.08);
+  }
+  /* Select ok işareti */
+  .field select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238899bb' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+  select option { background: #1e2d55; color: #e8edf8; }
+
+  /* ROW */
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* BUTTON */
+  .btn {
+    width: 100%; padding: 16px;
+    font-family: 'Syne', sans-serif;
+    font-size: 16px; font-weight: 700;
+    border: none; border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.2s, opacity 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent) 0%, #f59e0b 100%);
+    color: #1a1a1a;
+    box-shadow: 0 4px 20px rgba(232,160,32,0.35);
+  }
+  .btn-primary:active { box-shadow: 0 2px 8px rgba(232,160,32,0.2); }
+  .btn-secondary {
+    background: rgba(255,255,255,0.07);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    margin-top: 10px;
+  }
+
+  /* RESULTS */
+  .result-hidden { display: none; }
+  .result-grid { display: grid; gap: 10px; }
+
+  .result-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .result-item.highlight {
+    background: rgba(232,160,32,0.12);
+    border-color: rgba(232,160,32,0.3);
+  }
+  .result-item.highlight-blue {
+    background: rgba(59,130,246,0.10);
+    border-color: rgba(59,130,246,0.3);
+  }
+  .result-item.highlight-green {
+    background: rgba(34,197,94,0.10);
+    border-color: rgba(34,197,94,0.3);
+  }
+  .result-label { font-size: 13px; color: var(--muted); flex: 1; }
+  .result-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px; font-weight: 700; color: var(--text);
+    text-align: right;
+  }
+  .result-item.highlight .result-value { color: var(--accent); font-size: 20px; }
+  .result-item.highlight-blue .result-value { color: #60a5fa; }
+  .result-item.highlight-green .result-value { color: var(--green); }
+
+  .result-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 600;
+    padding: 4px 10px; border-radius: 20px;
+    background: rgba(239,68,68,0.15); color: var(--red);
+    margin-top: 6px;
+  }
+  .result-badge.positive { background: rgba(34,197,94,0.15); color: var(--green); }
+  .result-badge.neutral { background: rgba(59,130,246,0.15); color: #60a5fa; }
+
+  /* DIVIDER */
+  .divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+  /* INFO BANNER */
+  .info-banner {
+    background: rgba(59,130,246,0.1);
+    border: 1px solid rgba(59,130,246,0.25);
+    border-radius: 10px;
+    padding: 12px 14px; font-size: 12px;
+    color: #93c5fd; margin-bottom: 16px; line-height: 1.6;
+  }
+  .warn-banner {
+    background: rgba(232,160,32,0.08);
+    border: 1px solid rgba(232,160,32,0.2);
+    border-radius: 10px;
+    padding: 10px 14px; font-size: 11px;
+    color: #fbbf24; margin-bottom: 0; line-height: 1.6;
+  }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; border-radius: 10px; margin-top: 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 280px; }
+  th {
+    background: rgba(255,255,255,0.07);
+    padding: 8px 10px; text-align: left;
+    color: var(--muted); font-weight: 600;
+    font-size: 11px; letter-spacing: 0.5px;
+    position: sticky; top: 0;
+  }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--border); color: var(--text); }
+  td:last-child { text-align: right; font-family: 'Syne', sans-serif; font-weight: 600; }
+  tr:last-child td { border-bottom: none; }
+  tr.current-row td { background: rgba(232,160,32,0.1); color: var(--accent); font-weight: 600; }
+  tr.range-row td { background: rgba(59,130,246,0.07); }
+
+  /* TABS */
+  .tabs {
+    display: flex; background: rgba(255,255,255,0.05);
+    border-radius: 10px; padding: 4px;
+    margin-bottom: 16px; gap: 4px;
+  }
+  .tab {
+    flex: 1; text-align: center; padding: 10px 6px;
+    font-size: 13px; font-weight: 600; border-radius: 8px;
+    cursor: pointer; transition: all 0.2s; color: var(--muted);
+    font-family: 'Syne', sans-serif;
+  }
+  .tab.active { background: var(--card); color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+
+  /* PAGES */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* INSTALL PROMPT */
+  .install-prompt {
+    background: linear-gradient(135deg, #1e3a6b, #0d2244);
+    border: 1px solid rgba(59,130,246,0.3);
+    border-radius: 14px; padding: 16px;
+    margin-bottom: 16px;
+    display: flex; gap: 12px; align-items: center;
+  }
+  .install-icon { font-size: 28px; flex-shrink: 0; }
+  .install-text h4 { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .install-text p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .install-close {
+    margin-left: auto; flex-shrink: 0;
+    background: rgba(255,255,255,0.1); border: none;
+    color: var(--muted); border-radius: 50%;
+    width: 24px; height: 24px; cursor: pointer;
+    font-size: 14px; display: flex; align-items: center; justify-content: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="icon">🏗️</div>
+      Yapı Maliyet Hesabı
+    </div>
+    <div class="header-brand">drdnctgl</div>
+  </div>
+  <div class="header-sub">Sigorta Prim Eksiği &amp; Birim Maliyet</div>
+</div>
+
+<div class="main">
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('hesap')">Hesaplama</div>
+    <div class="tab" onclick="switchTab('tablo')">Maliyet Tablosu</div>
+    <div class="tab" onclick="switchTab('bilgi')">Bilgi</div>
+  </div>
+
+  <!-- ─────────────────── TAB: HESAPLAMA ─────────────────── -->
+  <div class="page active" id="page-hesap">
+
+    <div class="install-prompt" id="installBanner">
+      <div class="install-icon">📲</div>
+      <div class="install-text">
+        <h4>Ana Ekrana Ekle</h4>
+        <p>Tarayıcı menüsünden "Ana Ekrana Ekle" seçerek uygulama gibi kullanın.</p>
+      </div>
+      <button class="install-close" onclick="document.getElementById('installBanner').style.display='none'">✕</button>
+    </div>
+
+    <!-- GİRİŞ -->
+    <div class="card">
+      <div class="card-title">Yapı Bilgileri</div>
+
+      <div class="field">
+        <label>Metrekare (m²)</label>
+        <input type="number" id="metrekare" value="100" min="1" inputmode="decimal" placeholder="Örn: 150">
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Başlangıç Yılı</label>
+          <select id="baslangicYili"></select>
+        </div>
+        <div class="field">
+          <label>Bitiş Yılı</label>
+          <select id="bitisYili"></select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Yapı Sınıfı</label>
+          <select id="yapiSinifi" onchange="updateGruplar()">
+            <option value="I">I</option>
+            <option value="II">II</option>
+            <option value="III">III</option>
+            <option value="IV">IV</option>
+            <option value="V">V</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Grup</label>
+          <select id="grup"></select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>İşçilik Oranı (%)</label>
+        <select id="iscilikOrani">
+          <option value="7">7</option>
+          <option value="7.33">7.33</option>
+          <option value="9" selected>9</option>
+          <option value="13">13</option>
+          <option value="15">15</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Bildirilen PEK (₺)</label>
+        <input type="number" id="bildirilenPEK" value="0" min="0" inputmode="decimal" placeholder="0">
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="hesapla()">🔢 HESAPLA</button>
+    <button class="btn btn-secondary" onclick="sifirla()">Temizle</button>
+
+    <!-- SONUÇ (başta gizli) -->
+    <div id="sonuc" class="result-hidden" style="margin-top:20px;">
+      <div class="card">
+        <div class="card-title">Hesaplama Sonuçları</div>
+        <div class="result-grid">
+
+          <div class="result-item">
+            <span class="result-label">Birim Maliyet Bedeli</span>
+            <span class="result-value" id="r-birimMaliyet">—</span>
+          </div>
+
+          <div class="result-item highlight-blue">
+            <span class="result-label">Ana Maliyet</span>
+            <span class="result-value" id="r-anaMaliyet">—</span>
+          </div>
+
+          <div class="result-item">
+            <span class="result-label">İşçilik Oranı (%75'i)</span>
+            <span class="result-value" id="r-iscilikOrani75">—</span>
+          </div>
+
+          <div class="result-item">
+            <span class="result-label">İşçilik Maliyeti</span>
+            <span class="result-value" id="r-iscilikMaliyeti">—</span>
+          </div>
+
+          <div class="divider" style="grid-column:1/-1; margin:0;"></div>
+
+          <div class="result-item">
+            <span class="result-label">Bildirilen PEK</span>
+            <span class="result-value" id="r-bildirilenPEK">—</span>
+          </div>
+
+          <div class="result-item highlight-green">
+            <span class="result-label">Fark (İşçilik − PEK)</span>
+            <span class="result-value" id="r-fark">—</span>
+          </div>
+
+          <div class="result-item highlight">
+            <div style="width:100%;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span class="result-label" style="font-weight:600;color:var(--text);">Sigorta Prim Eksiği</span>
+                <span class="result-value" id="r-tutar">—</span>
+              </div>
+              <div id="r-badge" style="margin-top:6px;"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="info-banner" id="r-info"></div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── TAB: TABLO ─────────────────── -->
+  <div class="page" id="page-tablo">
+    <div class="card">
+      <div class="card-title">Maliyet Bedelleri Tablosu</div>
+      <div class="info-banner" style="margin-bottom:14px;">
+        Sınıf ve grup seçerek yıllık birim maliyet bedellerini görüntüleyin. Hesaplamada kullanılan yıl aralığı mavi renkte gösterilir.
+      </div>
+      <div class="row" style="margin-bottom:14px;">
+        <div class="field">
+          <label>Yapı Sınıfı</label>
+          <select id="t-sinif" onchange="updateTabloGruplar(); renderTablo()">
+            <option value="I">I</option>
+            <option value="II">II</option>
+            <option value="III">III</option>
+            <option value="IV">IV</option>
+            <option value="V">V</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Grup</label>
+          <select id="t-grup" onchange="renderTablo()"></select>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Yıl</th>
+              <th style="text-align:right;">Birim Maliyet (₺/m²)</th>
+            </tr>
+          </thead>
+          <tbody id="tabloBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── TAB: BİLGİ ─────────────────── -->
+  <div class="page" id="page-bilgi">
+    <div class="card">
+      <div class="card-title">Hesaplama Mantığı</div>
+      <div style="font-size:14px; color:var(--muted); line-height:1.9;">
+        <p style="margin-bottom:12px;">
+          <strong style="color:var(--text);">1. Birim Maliyet Bedeli</strong><br>
+          Başlangıç–Bitiş yılları arasındaki her yılın birim maliyet bedellerinin ortalaması alınır.
+        </p>
+        <p style="margin-bottom:12px;">
+          <strong style="color:var(--text);">2. Ana Maliyet</strong><br>
+          <span style="color:var(--accent);">Birim Maliyet × Metrekare</span>
+        </p>
+        <p style="margin-bottom:12px;">
+          <strong style="color:var(--text);">3. İşçilik Oranı (%75'i)</strong><br>
+          <span style="color:var(--accent);">(Seçilen İşçilik Oranı / 100) × 0,75</span>
+        </p>
+        <p style="margin-bottom:12px;">
+          <strong style="color:var(--text);">4. İşçilik Maliyeti</strong><br>
+          <span style="color:var(--accent);">Ana Maliyet × İşçilik Oranı (%75'i)</span>
+        </p>
+        <p style="margin-bottom:12px;">
+          <strong style="color:var(--text);">5. Fark</strong><br>
+          <span style="color:var(--accent);">İşçilik Maliyeti − Bildirilen PEK</span>
+        </p>
+        <p>
+          <strong style="color:var(--text);">6. Sigorta Prim Eksiği (Tutar)</strong><br>
+          <span style="color:var(--accent);">Fark × 0,345</span>&nbsp;
+          <span style="font-size:12px;">(SGK prim oranı %34,5)</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Yapı Sınıfları</div>
+      <div style="font-size:13px; color:var(--muted); line-height:2;">
+        <div><strong style="color:var(--accent);">Sınıf I (A,B,C,D):</strong> Kerpiç, ahşap, basit yapılar</div>
+        <div><strong style="color:var(--accent);">Sınıf II (A,B,C):</strong> Briket, kagir konutlar</div>
+        <div><strong style="color:var(--accent);">Sınıf III (A,B,C):</strong> Betonarme konutlar</div>
+        <div><strong style="color:var(--accent);">Sınıf IV (A,B,C):</strong> Lüks konutlar</div>
+        <div><strong style="color:var(--accent);">Sınıf V (A,B,C,D,E):</strong> Özel yapılar, iş merkezleri</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">İşçilik Oranları</div>
+      <div style="font-size:13px; color:var(--muted); line-height:2;">
+        <div><strong style="color:var(--text);">%7 &nbsp;</strong> — Prefabrik</div>
+        <div><strong style="color:var(--text);">%7,3</strong> — Tünel Kalıp</div>
+        <div><strong style="color:var(--text);">%9 &nbsp;</strong> — Betonarme</div>
+        <div><strong style="color:var(--text);">%12 &nbsp;</strong> — Kargir Yığma</div>
+        <div><strong style="color:var(--text);">%13 &nbsp;</strong> — Tadilat</div>
+      </div>
+    </div>
+
+    <div class="warn-banner">
+      ⚠️ 1990 yılı öncesi maliyet bedelleri bu hesaplamalara dahil değildir.
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// MALİYET VERİLERİ (Maliyet Bedelleri sayfasından)
+// ═══════════════════════════════════════════════════════════════
+const MALIYETLER = {
+  1990: {"I-A":0.11,"I-B":0.11,"II-A":0.22,"II-B":0.22,"III-A":0.37,"III-B":0.42,"IV-A":0.48,"IV-B":0.53,"IV-C":0.64,"V-A":0.80,"V-B":0.96,"V-C":1.11,"V-D":1.30},
+  1991: {"I-A":0.18,"I-B":0.18,"II-A":0.34,"II-B":0.34,"III-A":0.58,"III-B":0.66,"IV-A":0.74,"IV-B":0.83,"IV-C":1.00,"V-A":1.24,"V-B":1.50,"V-C":1.74,"V-D":2.04},
+  1992: {"I-A":0.29,"I-B":0.29,"II-A":0.57,"II-B":0.57,"III-A":0.96,"III-B":1.10,"IV-A":1.24,"IV-B":1.38,"IV-C":1.65,"V-A":2.06,"V-B":2.48,"V-C":2.89,"V-D":3.25},
+  1993: {"I-A":0.53,"I-B":0.53,"II-A":1.04,"II-B":1.04,"III-A":1.75,"III-B":2.00,"IV-A":2.25,"IV-B":2.50,"IV-C":3.00,"V-A":3.75,"V-B":4.50,"V-C":5.26,"V-D":6.16},
+  1994: {"I-A":0.88,"I-B":0.88,"II-A":1.74,"II-B":1.74,"III-A":2.92,"III-B":3.34,"IV-A":3.76,"IV-B":4.18,"IV-C":5.02,"V-A":6.27,"V-B":7.52,"V-C":8.78,"V-D":10.29},
+  1995: {"I-A":1.93,"I-B":1.93,"II-A":3.82,"II-B":3.82,"III-A":6.43,"III-B":7.36,"IV-A":8.28,"IV-B":9.19,"IV-C":11.03,"V-A":13.79,"V-B":16.55,"V-C":19.31,"V-D":22.63},
+  1996: {"I-A":3.48,"I-B":3.48,"II-A":6.87,"II-B":6.87,"III-A":11.58,"III-B":13.24,"IV-A":14.89,"IV-B":16.55,"IV-C":19.86,"V-A":24.82,"V-B":29.79,"V-C":34.75,"V-D":40.73},
+  1997: {"I-A":6.79,"I-B":6.79,"II-A":13.40,"II-B":13.40,"III-A":22.58,"III-B":25.82,"IV-A":29.04,"IV-B":32.27,"IV-C":38.73,"V-A":48.40,"V-B":58.08,"V-C":67.77,"V-D":79.42},
+  1998: {"I-A":11.75,"I-B":11.75,"II-A":23.18,"II-B":23.18,"III-A":39.06,"III-B":44.67,"IV-A":50.24,"IV-B":55.82,"IV-C":67.00,"V-A":83.73,"V-B":100.48,"V-C":117.24,"V-D":137.41},
+  1999: {"I-A":18.21,"I-B":18.21,"II-A":35.93,"II-B":35.93,"III-A":60.55,"III-B":69.23,"IV-A":77.88,"IV-B":86.52,"IV-C":103.84,"V-A":129.78,"V-B":155.74,"V-C":181.72,"V-D":212.98},
+  2000: {"I-A":30.05,"I-B":30.05,"II-A":59.28,"II-B":59.28,"III-A":99.90,"III-B":114.23,"IV-A":128.50,"IV-B":142.76,"IV-C":171.34,"V-A":214.13,"V-B":256.98,"V-C":299.84,"V-D":351.41},
+  2001: {"I-A":20,"I-B":35,"II-A":55,"II-B":75,"III-A":123,"III-B":140,"IV-A":158,"IV-B":175,"IV-C":210,"V-A":260,"V-B":315,"V-C":360,"V-D":430},
+  2002: {"I-A":33,"I-B":57.75,"II-A":90.75,"II-B":123.50,"III-A":202.95,"III-B":231,"IV-A":260.70,"IV-B":288.75,"IV-C":346.50,"V-A":429,"V-B":519.75,"V-C":594,"V-D":709.50},
+  2003: {"I-A":43,"I-B":75,"II-A":118,"II-B":161,"III-A":264,"III-B":300,"IV-A":339,"IV-B":375,"IV-C":450,"V-A":558,"V-B":676,"V-C":772,"V-D":922},
+  2004: {"I-A":46,"I-B":80,"II-A":127,"II-B":173,"III-A":283,"III-B":322,"IV-A":364,"IV-B":402,"IV-C":483,"V-A":599,"V-B":725,"V-C":828,"V-D":989},
+  2005: {"I-A":51,"I-B":89,"II-A":141,"II-B":193,"III-A":315,"III-B":359,"IV-A":406,"IV-B":448,"IV-C":539,"V-A":668,"V-B":809,"V-C":924,"V-D":1103},
+  2006: {"I-A":54,"I-B":94,"II-A":149,"II-B":205,"III-A":334,"III-B":381,"IV-A":430,"IV-B":475,"IV-C":571,"V-A":708,"V-B":858,"V-C":979,"V-D":1169},
+  2007: {"I-A":61,"I-B":105,"II-A":167,"II-B":230,"III-A":375,"III-B":427,"IV-A":482,"IV-B":533,"IV-C":640,"V-A":794,"V-B":962,"V-C":1098,"V-D":1311},
+  2008: {"I-A":65,"I-B":112,"II-A":178,"II-B":245,"III-A":399,"III-B":455,"IV-A":513,"IV-B":568,"IV-C":682,"V-A":846,"V-B":1025,"V-C":1169,"V-D":1396},
+  2009: {"I-A":71,"I-B":123,"II-A":195,"II-B":268,"III-A":437,"III-B":498,"IV-A":561,"IV-B":622,"IV-C":746,"V-A":926,"V-B":1122,"V-C":1279,"V-D":1528},
+  2010: {"I-A":73,"I-B":127,"II-A":201,"II-B":276,"III-A":448,"III-B":511,"IV-A":577,"IV-B":640,"IV-C":761,"V-A":945,"V-B":1144,"V-C":1279,"V-D":1559},
+  2011: {"I-A":80,"I-B":137,"II-A":216,"II-B":297,"III-A":482,"III-B":565,"IV-A":625,"IV-B":701,"IV-C":819,"V-A":1035,"V-B":1235,"V-C":1415,"V-D":1710},
+  2012: {"I-A":80,"I-B":140,"II-A":225,"II-B":305,"III-A":475,"III-B":560,"IV-A":615,"IV-B":695,"IV-C":800,"V-A":1015,"V-B":1240,"V-C":1400,"V-D":1690},
+  2013: {"I-A":85,"I-B":145,"II-A":235,"II-B":320,"III-A":490,"III-B":585,"IV-A":650,"IV-B":730,"IV-C":840,"V-A":1040,"V-B":1270,"V-C":1450,"V-D":1750},
+  2014: {"I-A":100,"I-B":160,"II-A":250,"II-B":350,"III-A":550,"III-B":650,"IV-A":700,"IV-B":800,"IV-C":900,"V-A":1150,"V-B":1400,"V-C":1600,"V-D":1900},
+  2015: {"I-A":110,"I-B":170,"II-A":270,"II-B":370,"III-A":590,"III-B":700,"IV-A":750,"IV-B":860,"IV-C":960,"V-A":1230,"V-B":1500,"V-C":1710,"V-D":2040},
+  2016: {"I-A":118,"I-B":180,"II-A":290,"II-B":390,"III-A":630,"III-B":750,"IV-A":800,"IV-B":920,"IV-C":1030,"V-A":1320,"V-B":1610,"V-C":1835,"V-D":2150},
+  2017: {"I-A":133,"I-B":198,"II-A":320,"II-B":419,"III-A":494,"III-B":838,"IV-A":882,"IV-B":1021,"IV-C":1135,"V-A":1425,"V-B":1764,"V-C":2023,"V-D":2383},
+  2018: {"I-A":153,"I-B":228,"II-A":369,"II-B":483,"III-A":800,"III-B":966,"IV-A":1016,"IV-B":1177,"IV-C":1308,"V-A":1642,"V-B":2033,"V-C":2331,"V-D":2746},
+  2019: {"I-A":185,"I-B":275,"II-A":450,"II-B":590,"III-A":980,"III-B":1210,"IV-A":1270,"IV-B":1470,"IV-C":1630,"V-A":2010,"V-B":2485,"V-C":2850,"V-D":3360},
+  2020: {"I-A":210,"I-B":310,"II-A":510,"II-B":750,"III-A":1100,"III-B":1450,"IV-A":1550,"IV-B":1850,"IV-C":2000,"V-A":2400,"V-B":2900,"V-C":3250,"V-D":3800},
+  2021: {"I-A":255,"I-B":390,"II-A":640,"II-B":940,"III-A":1360,"III-B":1800,"IV-A":1920,"IV-B":2300,"IV-C":2480,"V-A":2970,"V-B":3600,"V-C":4000,"V-D":4700},
+  2022: {"I-A":650,"I-B":990,"II-A":1650,"II-B":2400,"III-A":3450,"III-B":4650,"IV-A":4950,"IV-B":5900,"IV-C":6400,"V-A":7700,"V-B":9350,"V-C":10300,"V-D":12150},
+  2023: {"I-A":1050,"I-B":1550,"II-A":2600,"II-B":3800,"II-C":5350,"III-A":7500,"III-B":9000,"IV-A":10200,"IV-B":12050,"IV-C":12450,"V-A":13800,"V-B":16250,"V-C":18100,"V-D":21400},
+  2024: {"I-A":1450,"I-B":2100,"II-A":3500,"II-B":5250,"II-C":7750,"III-A":12250,"III-B":14400,"IV-A":15300,"IV-B":17400,"IV-C":18700,"V-A":21300,"V-B":22250,"V-C":24300,"V-D":26800},
+  2025: {"I-A":2100,"I-B":3050,"I-C":3300,"I-D":3900,"II-A":6600,"II-B":10200,"II-C":12400,"III-A":17100,"III-B":18200,"III-C":19150,"IV-A":21500,"IV-B":27500,"IV-C":32600,"V-A":34400,"V-B":35600,"V-C":39500,"V-D":43400,"V-E":86250},
+  2026: {"I-A":2600,"I-B":3900,"I-C":4200,"I-D":4800,"II-A":8100,"II-B":12500,"II-C":15100,"III-A":19800,"III-B":21050,"III-C":23400,"IV-A":26450,"IV-B":33900,"IV-C":40500,"V-A":42350,"V-B":43850,"V-C":48750,"V-D":53500,"V-E":103500}
+};
+
+// Sınıfa göre mevcut gruplar (her yıl için tam liste; tabloda yok olanlar otomatik filtrelenir)
+const SINIF_GRUPLAR = {
+  "I":  ["A","B","C","D"],
+  "II": ["A","B","C"],
+  "III":["A","B","C"],
+  "IV": ["A","B","C"],
+  "V":  ["A","B","C","D","E"]
+};
+
+const MIN_YIL = 1990;
+const MAX_YIL = 2026;
+
+// Son hesaplamada kullanılan yıl aralığını tabloda göstermek için
+let sonHesapBas = null, sonHesapBit = null, sonHesapSinif = null, sonHesapGrup = null;
+
+// ═══════════════════════════════════════════════════════════════
+// BAŞLATMA
+// ═══════════════════════════════════════════════════════════════
+function init() {
+  const bYili = document.getElementById('baslangicYili');
+  const eYili = document.getElementById('bitisYili');
+
+  for (let y = MIN_YIL; y <= MAX_YIL; y++) {
+    bYili.innerHTML += `<option value="${y}">${y}</option>`;
+    eYili.innerHTML += `<option value="${y}">${y}</option>`;
+  }
+  // Varsayılan: başlangıç=bitiş=2026 (Excel'deki gibi)
+  bYili.value = "2026";
+  eYili.value = "2026";
+
+  updateGruplar();
+  updateTabloGruplar();
+  renderTablo();
+}
+
+function updateGruplar() {
+  const sinif = document.getElementById('yapiSinifi').value;
+  const grupSel = document.getElementById('grup');
+  const eskiDeger = grupSel.value;
+  grupSel.innerHTML = '';
+  SINIF_GRUPLAR[sinif].forEach(g => {
+    grupSel.innerHTML += `<option value="${g}">${g}</option>`;
+  });
+  // Önceki seçimi koru (mümkünse)
+  if (SINIF_GRUPLAR[sinif].includes(eskiDeger)) grupSel.value = eskiDeger;
+}
+
+function updateTabloGruplar() {
+  const sinif = document.getElementById('t-sinif').value;
+  const grupSel = document.getElementById('t-grup');
+  const eskiDeger = grupSel.value;
+  grupSel.innerHTML = '';
+  SINIF_GRUPLAR[sinif].forEach(g => {
+    grupSel.innerHTML += `<option value="${g}">${g}</option>`;
+  });
+  if (SINIF_GRUPLAR[sinif].includes(eskiDeger)) grupSel.value = eskiDeger;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// HESAPLAMA — Excel'deki formüllerle birebir
+// ═══════════════════════════════════════════════════════════════
+function hesapla() {
+  const m2            = parseFloat(document.getElementById('metrekare').value) || 0;
+  const bYil          = parseInt(document.getElementById('baslangicYili').value);
+  const eYil          = parseInt(document.getElementById('bitisYili').value);
+  const sinif         = document.getElementById('yapiSinifi').value;
+  const grup          = document.getElementById('grup').value;
+  const iscilikOrani  = parseFloat(document.getElementById('iscilikOrani').value);
+  const bildirilenPEK = parseFloat(document.getElementById('bildirilenPEK').value) || 0;
+
+  // Yıl kontrolü
+  if (bYil > eYil) {
+    alert('Başlangıç yılı bitiş yılından büyük olamaz!');
+    return;
+  }
+  if (m2 <= 0) {
+    alert('Metrekare değeri 0\'dan büyük olmalıdır!');
+    return;
+  }
+
+  const key = `${sinif}-${grup}`;
+
+  // ── 1. Birim Maliyet Hesabı ──
+  // Aynı yılsa sadece o yıl alınır
+  // Farklı yılsa:
+  // başlangıç yılı dahil
+  // bitiş yılının bir önceki yılı dahil
+  // bitiş yılı hariç
+  // boş yıllar 0 kabul edilerek ortalamaya dahil edilir
+
+  let toplam = 0;
+  let sayac = 0;
+
+  if (bYil === eYil) {
+
+    const v = MALIYETLER[bYil]?.[key] || 0;
+
+    toplam = v;
+    sayac = 1;
+
+  } else {
+
+    for (let y = bYil; y < eYil; y++) {
+
+      const v = MALIYETLER[y]?.[key] || 0;
+
+      toplam += v;
+
+      // Her yıl ortalamaya dahil
+      sayac++;
+
+    }
+
+  }
+
+  if (sayac === 0) {
+    alert(`${bYil}–${eYil} aralığında ${sinif}-${grup} sınıfı için veri bulunamadı!\nFarklı bir yıl aralığı veya sınıf/grup deneyin.`);
+    return;
+  }
+
+  // ── 2. Formüller (Excel B13–B20 sırası) ──
+  const birimMaliyet    = toplam / sayac;                      // B13: ortalama
+  const anaMaliyet      = birimMaliyet * m2;                  // B14: B1 × B13
+  const iscilik75       = (iscilikOrani / 100) * 0.75;        // B15: (B9/100) × 0.75
+  const iscilikMaliyeti = anaMaliyet * iscilik75;              // B16: B14 × B15
+  // B17: gizli satır
+  const fark            = iscilikMaliyeti - bildirilenPEK;     // B19: B16 − B18
+  const tutar           = fark * 0.345;                        // B20: B19 × 0.345 (SGK %34.5)
+
+  // ── 3. Ekrana yaz ──
+  document.getElementById('r-birimMaliyet').textContent    = fmt(birimMaliyet) + ' ₺/m²';
+  document.getElementById('r-anaMaliyet').textContent      = fmt(anaMaliyet) + ' ₺';
+  document.getElementById('r-iscilikOrani75').textContent  = '%' + (iscilik75 * 100).toFixed(4);
+  document.getElementById('r-iscilikMaliyeti').textContent = fmt(iscilikMaliyeti) + ' ₺';
+  document.getElementById('r-bildirilenPEK').textContent   = fmt(bildirilenPEK) + ' ₺';
+  document.getElementById('r-fark').textContent            = fmt(fark) + ' ₺';
+  document.getElementById('r-tutar').textContent           = fmt(tutar) + ' ₺';
+
+  // Badge
+  const badge = document.getElementById('r-badge');
+  if (tutar > 0.005) {
+    badge.innerHTML = `<span class="result-badge">▲ Eksik Prim Bildirimi</span>`;
+  } else if (tutar < -0.005) {
+    badge.innerHTML = `<span class="result-badge positive">▼ Fazla Bildirim</span>`;
+  } else {
+    badge.innerHTML = `<span class="result-badge neutral">✓ Eşit</span>`;
+  }
+
+  // Bilgi satırı
+  const veriMesaj = '';
+  document.getElementById('r-info').innerHTML =
+    `<strong>${bYil}${bYil !== eYil ? '–' + eYil : ''}</strong> · ` +
+    `<strong>${sinif}-${grup}</strong> · ` +
+    `${sayac} yıl ortalaması = <strong>${fmt(birimMaliyet)} ₺/m²</strong>${veriMesaj}`;
+
+  // Sonucu göster ve kaydır
+  const sonucEl = document.getElementById('sonuc');
+  sonucEl.classList.remove('result-hidden');
+  setTimeout(() => sonucEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+
+  // Tabloda bu yıl aralığını vurgula
+  sonHesapBas = bYil; sonHesapBit = eYil;
+  sonHesapSinif = sinif; sonHesapGrup = grup;
+}
+
+function sifirla() {
+  document.getElementById('metrekare').value     = '100';
+  document.getElementById('baslangicYili').value = '2026';
+  document.getElementById('bitisYili').value     = '2026';
+  document.getElementById('yapiSinifi').value    = 'I';
+  updateGruplar();
+  document.getElementById('grup').value          = 'C';
+  document.getElementById('iscilikOrani').value  = '9';
+  document.getElementById('bildirilenPEK').value = '0';
+  document.getElementById('sonuc').classList.add('result-hidden');
+  sonHesapBas = sonHesapBit = sonHesapSinif = sonHesapGrup = null;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FORMAT
+// ═══════════════════════════════════════════════════════════════
+function fmt(n) {
+  return new Intl.NumberFormat('tr-TR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(n);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TABLO
+// ═══════════════════════════════════════════════════════════════
+function renderTablo() {
+  const sinif = document.getElementById('t-sinif').value;
+  const grup  = document.getElementById('t-grup').value;
+  const key   = `${sinif}-${grup}`;
+  const tbody = document.getElementById('tabloBody');
+  tbody.innerHTML = '';
+
+  const yillar = Object.keys(MALIYETLER).map(Number).sort((a,b) => b - a);
+
+  yillar.forEach(y => {
+    const v = MALIYETLER[y]?.[key];
+    if (v === undefined) return; // Bu sınıf/grup bu yılda yok, satır gösterme
+
+    const tr = document.createElement('tr');
+
+    // Renklendirme: son hesaplama aralığıyla eşleşiyorsa mavi
+    if (sonHesapBas !== null && sinif === sonHesapSinif && grup === sonHesapGrup
+        && (
+     (sonHesapBas === sonHesapBit && y === sonHesapBas)
+     ||
+     (sonHesapBas !== sonHesapBit &&
+      y >= sonHesapBas &&
+      y < sonHesapBit)
+   )) {
+      tr.classList.add('range-row');
+    }
+    // En güncel yıl (2026) altın rengi
+    if (y === MAX_YIL) tr.classList.add('current-row');
+
+    tr.innerHTML = `<td>${y}</td><td>${fmt(v)} ₺</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TAB GEÇİŞİ
+// ═══════════════════════════════════════════════════════════════
+function switchTab(id) {
+  const tabIds = ['hesap','tablo','bilgi'];
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', tabIds[i] === id);
+  });
+  document.querySelectorAll('.page').forEach(p => {
+    p.classList.toggle('active', p.id === 'page-' + id);
+  });
+  // Tabloya geçince son hesaplamaya göre sınıf/grubu senkronize et
+  if (id === 'tablo' && sonHesapSinif) {
+    document.getElementById('t-sinif').value = sonHesapSinif;
+    updateTabloGruplar();
+    document.getElementById('t-grup').value = sonHesapGrup;
+  }
+  if (id === 'tablo') renderTablo();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BAŞLAT
+// ═══════════════════════════════════════════════════════════════
+init();
+</script>
+</body>
+</html>
